@@ -39,6 +39,7 @@ def get_domain(reqUrl,reqDomain):
     #print soup.prettify()
     #response = soup(class_='fr WhLeList-right')
     res_msg = soup.get_text().encode("utf-8")
+    print res_msg
     #req = json.dumps(req_raw.json())
     #解析json
     #msg = json.loads(req)
@@ -46,11 +47,11 @@ def get_domain(reqUrl,reqDomain):
 
 if __name__ == "__main__":
     #发送邮件参数
-    from_addr = '****@**.com'
-    to_addr = ['jk@**.com']
+    from_addr = '***@**.com'
+    to_addr = ['**@**.com']
     #to_addr = ['luwen@jf.com']
-    password = '*******'
-    smtpServer = 'smtp.**.com'
+    password = '******'
+    smtpServer = 'smtp.***.com'
     #请求查询域名信息参数
     reqUrl = 'http://whois.chinaz.com'
     #今天日期
@@ -64,12 +65,25 @@ if __name__ == "__main__":
     res = r'过期时间(\d{4})年(\d{2})月(\d{2})日'
     with open('domain.txt') as file:
         for domain in file:
-            host = domain.strip('\n')
-            try:
-                msgHost = get_domain(reqUrl,host)
-            except Exception,e:
-                print Exception,":",e
-                continue
+            host_info = domain.strip('\n').split()
+            host = host_info[0]
+            if len(host_info) == 2:
+                expired_time = host_info[1]
+                expiredStr = expired_time.split('-')
+                dw = datetime.datetime(int(expiredStr[0]), int(expiredStr[1]), int(expiredStr[2]))
+                periodTime = (dw - d1).days
+                print host
+                print periodTime
+                if periodTime < 60:
+                    subject = '%s域名即将过期提醒邮件' %host
+                    content = "%s域名还有%s天过期，请注意续费\n" %(host,periodTime)
+                    sendmail(from_addr,password,to_addr,smtpServer,subject,content)
+            else:
+                try:
+                    msgHost = get_domain(reqUrl,host)
+                except Exception,e:
+                    print Exception,":",e
+                    continue
             #判断查询是否成功
             #if msgHost['state'] != 1:
             #    errorCode = msgHost['state']
@@ -80,31 +94,31 @@ if __name__ == "__main__":
             #    time.sleep(10)
             #    continue
             #到期日期
-            print host
-            try:
-                expired_raw = re.search(res,msgHost)
-                #expired_raw = pattern.match(msgHost)
-            except Exception,e:
-                print Exception,":",e
-                continue
+            #print host
+                try:
+                    expired_raw = re.search(res,msgHost)
+                    #expired_raw = pattern.match(msgHost)
+                except Exception,e:
+                    print Exception,":",e
+                    continue
 
 
             #格式化到期日期
             #expiredStr = expired.split('-')
             #d2 = datetime.datetime(int(expiredStr[0]), int(expiredStr[1]), int(expiredStr[2]))
-            try :
-                d2 = datetime.datetime(int(expired_raw.group(1)), int(expired_raw.group(2)), int(expired_raw.group(3)))
-            except Exception,e:
-                print Exception,":",e
-                subject = '%s域名查询出错' %host
-                content = "%s域名查询过期时间出错，请注意检查\n" %(host)
-                sendmail(from_addr,password,to_addr,smtpServer,subject,content)
-                continue
+                try:
+                    d2 = datetime.datetime(int(expired_raw.group(1)), int(expired_raw.group(2)), int(expired_raw.group(3)))
+                except Exception,e:
+                    print Exception,":",e
+                    subject = '%s域名查询出错' %host
+                    content = "%s域名查询过期时间出错，请注意检查\n" %(host)
+                    sendmail(from_addr,password,to_addr,smtpServer,subject,content)
+                    continue
             #剩余时间
-            periodTime = (d2 - d1).days
-            print periodTime
-            if periodTime < 60:
-                subject = '%s域名即将过期提醒邮件' %host
-                content = "%s域名还有%s天过期，请注意续费\n" %(host,periodTime)
-                sendmail(from_addr,password,to_addr,smtpServer,subject,content)
-                time.sleep(10)
+                periodTime = (d2 - d1).days
+                print host
+                if periodTime < 60:
+                    subject = '%s域名即将过期提醒邮件' %host
+                    content = "%s域名还有%s天过期，请注意续费\n" %(host,periodTime)
+                    sendmail(from_addr,password,to_addr,smtpServer,subject,content)
+                    time.sleep(10)
