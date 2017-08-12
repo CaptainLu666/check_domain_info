@@ -2,6 +2,8 @@
 pip install pythonwhois
 2.check_domain.py脚本监控域名过期，每天运行一遍，当域名过期时间小于60天会发邮件报警
 3.get_domain.py会取域名过期时间信息，生成domain_list.txt文件
+4.判断domain.txt的过期时间，如果没填写才会到网上去查询
+5.domain.txt格式如下：www.***.com   2017-08-18
 
 改版后
 主程序：
